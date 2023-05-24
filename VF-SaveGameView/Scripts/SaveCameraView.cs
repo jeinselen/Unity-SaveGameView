@@ -108,63 +108,49 @@ public class SaveCameraView : MonoBehaviour
 			return;
 		}
 		
-		// Get multi sampling value
+		// Get the multi sampling value
 		int multiSampleValue = (int)multiSample;
 		
 		// Get the local camera component
 		activeCamera = GetComponent<Camera>();
-//		commandBuffer = new CommandBuffer();
-//		activeCamera.AddCommandBuffer(CameraEvent.AfterEverything, commandBuffer);
 		
-		// Getting the width/height of the game view even when not active
+		// Get the width/height of the game view
 		Vector2 resolution = GetMainGameViewSize();
 		int width = (int)resolution.x;
 		int height = (int)resolution.y;
 		
-		// Create a render texture with the same dimensions as the game view, including alpha
-		// ARGB32 - works only without post processing, ARGBHalf and ARGBFloat both have wrong gamma
-		// https://docs.unity3d.com/2022.1/Documentation/ScriptReference/RenderTextureFormat.html
-		// https://docs.unity3d.com/ScriptReference/Experimental.Rendering.GraphicsFormat.html
+		// Create an HDR render texture with the same dimensions as the game view
 		RenderTexture renderTexture = new RenderTexture(width, height, 32, RenderTextureFormat.ARGBFloat);
-//		RenderTexture renderTexture = new RenderTexture(width, height, 32, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.sRGB);
-//		RenderTexture renderTexture = RenderTexture.GetTemporary(width, height, 32, RenderTextureFormat.ARGBFloat);
 		if (multiSampleValue > 0)
-		{
 			renderTexture.antiAliasing = multiSampleValue;
-		}
 		
 		// Render the game view to the render texture
 		activeCamera.targetTexture = renderTexture;
 		activeCamera.Render();
-		
-		// Read the pixels from the render texture into a texture 2D
-		// https://docs.unity3d.com/2022.1/Documentation/ScriptReference/TextureFormat.html
 		RenderTexture.active = renderTexture;
+		
+		// Create an HDR texture with the same dimensions as the game view
+		// Read the pixels from the render texture into the texture
 		Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
-//		Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.RGBAHalf, false);
-//		Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
 		screenshotTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
 		screenshotTexture.Apply();
 		
-		// Convert linear render data to sRGB through a stupid complicated process where we shuffle everything
-		// Replace render texture with 8-bit version (should default to sRGB?)
-		renderTexture = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
+		// Convert linear render data to sRGB through a stupid complicated process where we shuffle everything to SDR textures
+		// Replace render texture with 8-bit version (forces sRGB conversion)
+		renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
 		// Copy the floating point texture to the 8-bit render texture
 		Graphics.Blit(screenshotTexture, renderTexture);
-		// Set render texture as active
-		RenderTexture.active = renderTexture;
-		// Replace output texture with 8-bit version (should default to sRGB?)
+		// Replace output texture with 8-bit version (maintains sRGB conversion)
 		screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
 		// Replace contents. Again.
 		screenshotTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
 		// Amazingly, this works, and is apparently the process required to fix PNG output gamma...what a nightmare
 		screenshotTexture.Apply();
 		
-		// Reset the active render texture and camera target texture
-		RenderTexture.active = null;
+		// Reset and remove the render texture
 		activeCamera.targetTexture = null;
+		RenderTexture.active = null;
 		DestroyImmediate(renderTexture);
-//		RenderTexture.ReleaseTemporary(renderTexture);
 		
 		// Process file name and combine with file path
 		string nameTemp = fileName;
@@ -175,7 +161,7 @@ public class SaveCameraView : MonoBehaviour
 		nameTemp = nameTemp.Replace("{time}", System.DateTime.Now.ToString("H-mm-ss.f"));
 		string finalPath = filePath + "/" + nameTemp + ".png";
 		
-		// Convert the Texture2D to PNG bytes and remove the source
+		// Convert the texture to PNG bytes and remove the source
 		byte[] pngData = screenshotTexture.EncodeToPNG();
 		DestroyImmediate(screenshotTexture);
 		
@@ -183,7 +169,7 @@ public class SaveCameraView : MonoBehaviour
 		File.WriteAllBytes(finalPath, pngData);
 		
 		// Provide feedback in the console
-		Debug.Log("Game view captured and exported to: " + finalPath);
+//		Debug.Log("Game view captured and exported to: " + finalPath);
 	}
 	
 	// Returns game view resolution even if that panel is not focused

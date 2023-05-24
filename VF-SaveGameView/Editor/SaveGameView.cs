@@ -2,9 +2,7 @@ using System.IO;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 public class SaveGameView : EditorWindow
 {
@@ -103,8 +101,46 @@ public class SaveGameView : EditorWindow
 			return;
 		}
 		
-		// Get multi sampling value
+		// Get the multi sampling value
 		int multiSampleValue = (int)multiSampleSelected;
+		
+		// Get the width/height of the game view
+		Vector2 resolution = GetMainGameViewSize();
+		int width = (int)resolution.x;
+		int height = (int)resolution.y;
+		
+		// Create an HDR render texture with the same dimensions as the game view
+		RenderTexture renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGBFloat);
+		if (multiSampleValue > 0)
+			renderTexture.antiAliasing = multiSampleValue;
+		
+		// Render the game view to the render texture
+		activeCamera.targetTexture = renderTexture;
+		activeCamera.Render();
+		RenderTexture.active = renderTexture;
+		
+		// Create an HDR texture with the same dimensions as the game view
+		// Read the pixels from the render texture into the texture
+		Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
+		screenshotTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+		screenshotTexture.Apply();
+		
+		// Convert linear render data to sRGB through a stupid complicated process where we shuffle everything to SDR textures
+		// Replace render texture with 8-bit version (forces sRGB conversion)
+		renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+		// Copy the floating point texture to the 8-bit render texture
+		Graphics.Blit(screenshotTexture, renderTexture);
+		// Replace output texture with 8-bit version (maintains sRGB conversion)
+		screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+		// Replace contents. Again.
+		screenshotTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+		// Amazingly, this works, and is apparently the process required to fix PNG output gamma...what a nightmare
+		screenshotTexture.Apply();
+		
+		// Reset and remove the render texture
+		activeCamera.targetTexture = null;
+		RenderTexture.active = null;
+		DestroyImmediate(renderTexture);
 		
 		// Process file name and combine with file path
 		string nameTemp = fileName;
@@ -115,36 +151,11 @@ public class SaveGameView : EditorWindow
 		nameTemp = nameTemp.Replace("{time}", System.DateTime.Now.ToString("H-mm-ss.f"));
 		string finalPath = filePath + "/" + nameTemp + ".png";
 		
-		// Get the width/height of the game view
-		Vector2 resolution = GetMainGameViewSize();
-		int width = (int)resolution.x;// - 10;
-		int height = (int)resolution.y;// - 10;
-				
-		// Create a render texture with the same dimensions as the game view, including alpha
-		RenderTexture renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
-		if (multiSampleValue > 0)
-		{
-			renderTexture.antiAliasing = multiSampleValue;
-		}
-		
-		// Set the render texture target and render the game view
-		activeCamera.targetTexture = renderTexture;
-		activeCamera.Render();
-		RenderTexture.active = renderTexture;
-		
-		// Create output texture and read the pixels from the render texture
-		Texture2D screenshotTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-		screenshotTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-		screenshotTexture.Apply();
-		
-		// Reset the active render texture and camera target texture, remove the render texture
-		activeCamera.targetTexture = null;
-		RenderTexture.active = null;
-		DestroyImmediate(renderTexture);
-		
-		// Convert the texture 2D to PNG bytes, remove the temporary texture, and save the bytes to a PNG file
+		// Convert the texture to PNG bytes and remove the source
 		byte[] pngData = screenshotTexture.EncodeToPNG();
 		DestroyImmediate(screenshotTexture);
+		
+		// Save the PNG bytes to a file
 		File.WriteAllBytes(finalPath, pngData);
 		
 		// Provide feedback in the console
