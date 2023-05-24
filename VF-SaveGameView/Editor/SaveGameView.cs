@@ -1,3 +1,7 @@
+// VF Save Game View
+// https://github.com/jeinselenVF/VF-UnitySaveGameView
+// Version 0.2
+
 using System.IO;
 using System.Collections;
 using UnityEngine;
@@ -39,8 +43,11 @@ public class SaveGameView : EditorWindow
 		EditorGUILayout.BeginHorizontal();
 		filePath = EditorGUILayout.TextField("File Path", filePath);
 		
-		if (filePath.Length <= 0 || !System.IO.Directory.Exists(filePath))
-		filePath = Application.dataPath.Replace("Assets", "Renders");
+//		if (filePath.Length <= 0 || !System.IO.Directory.Exists(filePath))
+		if (filePath.Length <= 0)
+		{
+			filePath = Application.dataPath.Replace("Assets", "Renders");
+		}
 		
 		if (GUILayout.Button("browse", GUILayout.MaxWidth(64)))
 		{
@@ -69,7 +76,7 @@ public class SaveGameView : EditorWindow
 		
 		GUILayout.Space(10);
 		
-		if (GUILayout.Button("Save PNG with Alpha"))
+		if (GUILayout.Button("Save PNG"))
 		{
 			CaptureGameView();
 		}
@@ -141,6 +148,19 @@ public class SaveGameView : EditorWindow
 		activeCamera.targetTexture = null;
 		RenderTexture.active = null;
 		DestroyImmediate(renderTexture);
+		
+		// Create target directory if it doesn't already exist
+		try
+		{
+			if (!System.IO.Directory.Exists(filePath))
+			{
+					System.IO.Directory.CreateDirectory(filePath);
+			}
+		}
+		catch (IOException ex)
+		{
+			Debug.Log(ex.Message);
+		}
 		
 		// Process file name and combine with file path
 		string nameTemp = fileName;

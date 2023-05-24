@@ -1,3 +1,7 @@
+// VF Save Camera View
+// https://github.com/jeinselenVF/VF-UnitySaveGameView
+// Version 0.2
+
 using System.IO;
 using System.Collections;
 using UnityEngine;
@@ -29,8 +33,11 @@ public class SaveCameraViewEditor : Editor
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.PropertyField(filePathProperty);
 		
-		if (filePathProperty.stringValue.Length <= 0 || !System.IO.Directory.Exists(filePathProperty.stringValue))
-		filePathProperty.stringValue = Application.dataPath.Replace("Assets", "Renders");
+//		if (filePathProperty.stringValue.Length <= 0 || !System.IO.Directory.Exists(filePathProperty.stringValue))
+		if (filePathProperty.stringValue.Length <= 0)
+		{
+			filePathProperty.stringValue = Application.dataPath.Replace("Assets", "Renders");
+		}
 		
 		if (GUILayout.Button("browse", GUILayout.MaxWidth(64)))
 		{
@@ -64,7 +71,7 @@ public class SaveCameraViewEditor : Editor
 		
 		EditorGUILayout.Space();
 		
-		if (GUILayout.Button("Save PNG with Alpha"))
+		if (GUILayout.Button("Save PNG"))
 		{
 			saveCameraView.CaptureCameraView();
 		}
@@ -151,6 +158,19 @@ public class SaveCameraView : MonoBehaviour
 		activeCamera.targetTexture = null;
 		RenderTexture.active = null;
 		DestroyImmediate(renderTexture);
+		
+		// Create target directory if it doesn't already exist
+		try
+		{
+			if (!System.IO.Directory.Exists(filePath))
+			{
+					System.IO.Directory.CreateDirectory(filePath);
+			}
+		}
+		catch (IOException ex)
+		{
+			Debug.Log(ex.Message);
+		}
 		
 		// Process file name and combine with file path
 		string nameTemp = fileName;
