@@ -1,4 +1,4 @@
-# VF-UnitySaveGameView
+# VF Save Game View
 
 Save PNG files from the Unity editor both in and out of play mode, using either a standalone render panel or camera-attached script.
 
