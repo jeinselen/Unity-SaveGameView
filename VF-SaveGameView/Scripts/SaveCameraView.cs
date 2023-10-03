@@ -90,7 +90,7 @@ public class SaveCameraView : MonoBehaviour
 	}
 	
 	[SerializeField, Tooltip("Location for saving PNG files")]
-	private string filePath;
+	private string filePath = "";
 	[SerializeField, Tooltip("PNG file name, dynamic variables: {scene} {camera} {date} {time}")]
 	private string fileName = "{scene} {camera} {date} {time}";
 	[SerializeField, Tooltip("Anti Aliasing (MSAA)")]

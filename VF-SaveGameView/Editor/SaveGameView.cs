@@ -20,7 +20,7 @@ public class SaveGameView : EditorWindow
 	
 	// Script variables
 	[SerializeField, Tooltip("Location for saving PNG files")]
-	private string filePath;
+	private string filePath = "";
 	[SerializeField, Tooltip("PNG file name, dynamic variables: {scene} {camera} {samples} {date} {time}")]
 	private string fileName = "{scene} {camera} {samples} {date} {time}";
 	private MultiSampleList multiSampleSelected;
