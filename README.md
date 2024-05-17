@@ -21,13 +21,19 @@ Save PNG files from the Unity editor both in and out of play mode, using either 
 - Can be used as a UI panel or as a script attached to a camera
 - Save PNG images with alpha, with two setup requirements:
 	- Camera background type must be set to `Solid Color` using black with 0% alpha
-	- Post processing must be disabled or modified to maintain alpha (URP doesn't by default)
+	- Post processing must be disabled or modified to maintain alpha ([URP doesn't by default](https://forum.unity.com/threads/transparent-rendertexture-with-postprocessing.1265873/) [[archive link](https://web.archive.org/web/20231109115119/https://forum.unity.com/threads/transparent-rendertexture-with-postprocessing.1265873/)])
 - Use dynamic variables in the file name for automated outputs
 	- `{scene}` = the name of the currently open scene
 	- `{camera}` = the name of the first active camera (SaveGameView) or attached camera (SaveCameraView)
 	- `{samples}` = the selected multi-sampling level
 	- `{date}` = the current date in YYYY-MM-DD format
 	- `{time}` = the current time in HH-MM-SS.F format
+
+
+
+## Debugging
+
+- If you get the error "no active camera found in the scene view" even though an active camera exists, make sure it's tagged as "mainCamera" in the Inspector.
 
 
 
