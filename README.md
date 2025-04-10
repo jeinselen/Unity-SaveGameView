@@ -1,4 +1,4 @@
-# VF Save Game View
+# Unity Save Game View
 
 Save PNG files from the Unity editor both in and out of play mode, using either a standalone render panel or camera-attached script.
 
@@ -45,6 +45,6 @@ Many thanks to the original inspiration [Snapscreen by Mufalder](https://github.
 
 ## Notes
 
-- Basic testing performed in Unity 2021.3 and 2022.1, should work in other versions
-- This was development by a member of the design department as an internal tool only, and does not reflect the quality or standards of the Vectorform engineering department
-- No warranty is provided, use at your own risk
+- Basic testing performed in Unity 2021.3, 2022.1, and Unity 6; should work in other versions
+- Does not work with TSAA, since the render target is created/destroyed in a single frame
+- This was developed by a member of the design department as an internal tool; no warranty is provided, use at your own risk

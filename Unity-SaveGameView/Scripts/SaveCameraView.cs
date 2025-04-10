@@ -1,5 +1,5 @@
-// VF Save Camera View
-// https://github.com/jeinselenVF/VF-UnitySaveGameView
+// Unity Save Camera View
+// https://github.com/jeinselen/Unity-SaveGameView
 // Version 0.2
 
 using System.IO;

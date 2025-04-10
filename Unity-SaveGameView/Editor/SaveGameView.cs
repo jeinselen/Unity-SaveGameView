@@ -1,5 +1,5 @@
-// VF Save Game View
-// https://github.com/jeinselenVF/VF-UnitySaveGameView
+// Unity Save Game View
+// https://github.com/jeinselen/Unity-SaveGameView
 // Version 0.2
 
 using System.IO;
@@ -27,7 +27,7 @@ public class SaveGameView : EditorWindow
 	private Camera activeCamera;
 	
 	// Add panel to the Unity menu system
-	[MenuItem("Tools/Vectorform/Save Game View")]
+	[MenuItem("Tools/Save Game View")]
 	public static void ShowWindow()
 	{
 //		EditorWindow.GetWindow(typeof(SaveGameView));
